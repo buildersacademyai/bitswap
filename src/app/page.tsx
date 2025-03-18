@@ -1,10 +1,19 @@
+import ButtonGradient from "./assets/svg/ButtonGradient.jsx";
+import Footer from "./components/Footer.jsx";
+import Header from "./components/Header.jsx";
+import Hero from "./components/Hero.jsx";
 
-export default function Home() {
+const App = () => {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      
-      <h1 className="text-3xl">Bitswap</h1>
-      <p className="">Comming soon....</p>
-    </div>
+    <>
+      <div className="pt-[4.75rem] lg:pt-[5.25rem] overflow-hidden">
+        <Header />
+        <Hero />
+        <Footer />
+      </div>
+      <ButtonGradient />
+    </>
   );
-}
+};
+
+export default App;
