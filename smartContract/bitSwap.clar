@@ -7,8 +7,7 @@
 
 ;; Import token traits to ensure proper token handling
 
-(use-trait ft-trait 'ST1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRVX023PT.sip-010-trait-ft-standard.sip-010-trait)
-;; (use-trait amm-trait .amm-trait)
+(use-trait ft-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
 
 
 ;; ====================================================
@@ -84,11 +83,11 @@
 
 ;; Check that the current block-height is within the deadline.
 (define-private (check-deadline (deadline uint))
-  (<= block-height deadline))
+  (<= stacks-block-height deadline))
 
 ;; Transfer tokens using ft-transfer trait - returns true on success
 (define-private (transfer-token (token-contract <ft-trait>) (amount uint) (sender principal) (recipient principal))
-  (let ((transfer-result (contract-call? token-contract transfer amount sender recipient none)))
+  (let ((transfer-result (as-contract (contract-call? token-contract transfer amount sender recipient none))))
     (is-ok transfer-result))) 
 
 ;; Validate basic inputs and reserves
@@ -99,24 +98,6 @@
 
 (define-private (min (a uint) (b uint))
   (if (< a b) a b))
-
-
-
-
-;; Square root integer implementation for liquidity calculation
-;; (define-private (sqrti (n uint))
-;;   (let ((x (/ (+ n u1) u2)))
-;;     (sqrti-iter x n)))
-
-;; Define a private helper function for square root calculation
-;; (define-private (sqrti-helper (n uint) (x uint))
-;;   (let ((y (/ (+ x (/ n x)) u2)))
-;;     (if (>= x y)
-;;         x
-;;         (sqrti n y))))
-
-;; (define-private (sqrti-init (n uint))
-;;   (sqrti n (/ (+ n u1) u2)))
 
 
 ;; Calculate the optimal liquidity tokens based on the token amounts
@@ -133,15 +114,6 @@
         (min 
           (/ (* amount-a current-liquidity) current-reserve-a)
           (/ (* amount-b current-liquidity) current-reserve-b)))))
-
-
-;; (define-private (sqrti-iter (x uint) (n uint))
-;;   (let ((y (/ (+ x (/ n x)) u2)))
-;;     (if (>= x y)
-;;         x
-;;         (sqrti-iter y n))))
-
-
 
 ;; ====================================================
 ;; Public Functions AMM Trait Implementation
@@ -184,7 +156,7 @@
         ;; Update the provider's balance and record the deposit block-height
         (map-set provider-liquidity tx-sender 
                 (+ (default-to u0 (map-get? provider-liquidity tx-sender)) minted-liquidity))
-        (map-set liquidity-lock tx-sender block-height)
+        (map-set liquidity-lock tx-sender stacks-block-height)
         
         (ok minted-liquidity)))))
 
@@ -205,7 +177,7 @@
          )
       
       (asserts! (>= provider-liq liquidity) ERR_INSUFFICIENT_LIQUIDITY)
-      (asserts! (>= block-height (+ lock-time LIQUIDITY_LOCK_PERIOD)) ERR_LIQUIDITY_LOCKED)
+      (asserts! (>= stacks-block-height (+ lock-time LIQUIDITY_LOCK_PERIOD)) ERR_LIQUIDITY_LOCKED)
       
       (let (
             (amount-a-out (/ (* (var-get reserve-a) liquidity) current-liquidity))
@@ -258,7 +230,7 @@
         (var-set total-swap-count (+ (var-get total-swap-count) u1))
         (var-set total-swap-volume-a (+ (var-get total-swap-volume-a) amount-in))
         (var-set total-swap-volume-b (+ (var-get total-swap-volume-b) amount-out))
-        (var-set last-swap-block block-height)
+        (var-set last-swap-block stacks-block-height)
         
         (ok amount-out)))))
 
@@ -294,7 +266,7 @@
         (var-set total-swap-count (+ (var-get total-swap-count) u1))
         (var-set total-swap-volume-b (+ (var-get total-swap-volume-b) amount-in))
         (var-set total-swap-volume-a (+ (var-get total-swap-volume-a) amount-out))
-        (var-set last-swap-block block-height)
+        (var-set last-swap-block stacks-block-height)
         
         (ok amount-out)))))
 
