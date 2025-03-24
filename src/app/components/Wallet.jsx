@@ -1,53 +1,41 @@
-// File: app/components/Wallet.jsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import Button from './_components/Button';
 
-// Create a component that safely integrates with the Leather wallet
 const WalletConnector = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [address, setAddress] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Add a crypto shim directly in the component
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Ensure global.crypto exists for libraries that use it
-      if (!global.crypto) {
-        global.crypto = {};
-      }
-      
-      // Ensure window.crypto exists
       if (!window.crypto) {
         window.crypto = {};
       }
-      
-      // Add getRandomValues if needed
       if (!window.crypto.getRandomValues) {
-        window.crypto.getRandomValues = function(array) {
+        window.crypto.getRandomValues = (array) => {
           for (let i = 0; i < array.length; i++) {
             array[i] = Math.floor(Math.random() * 256);
           }
           return array;
         };
       }
-      
-      // Check for previous connection
+
       try {
         const storedSession = localStorage.getItem('stacks-session');
         if (storedSession) {
           const parsed = JSON.parse(storedSession);
-          if (parsed && parsed.profile && parsed.profile.stxAddress) {
-            setAddress(parsed.profile.stxAddress.mainnet);
+          if (parsed?.profile?.stxAddress) {
+            setAddress(parsed.profile.stxAddress.mainnet || parsed.profile.stxAddress.testnet);
             setIsConnected(true);
           }
         }
       } catch (error) {
         console.error('Error checking previous connection:', error);
       }
-      
+
       setIsLoading(false);
     }
   }, []);
@@ -55,41 +43,50 @@ const WalletConnector = () => {
   const connectWallet = async () => {
     setIsLoading(true);
     setErrorMessage('');
-    
+
     try {
-      // Wrap in try-catch to handle potential errors
-      const connect = async () => {
-        try {
-          // Dynamic import with explicit error handling
-          const stacksConnectModule = await import('@stacks/connect');
-          if (!stacksConnectModule || !stacksConnectModule.showConnect) {
-            throw new Error('Failed to load @stacks/connect module');
-          }
-          
-          return stacksConnectModule.showConnect;
-        } catch (err) {
-          console.error('Error importing @stacks/connect:', err);
-          throw new Error(`Import error: ${err.message}`);
-        }
-      };
-      
-      // Get the connect function
-      const showConnect = await connect();
-      
-      // Use the connect function with full error handling
+      const { showConnect } = await import('@stacks/connect');
+
+      if (!showConnect) {
+        throw new Error('Failed to load @stacks/connect module.');
+      }
+
       showConnect({
-        appDetails: {
-          name: 'My Next.js App',
-          icon: '/logo.svg',
-        },
+        appDetails: { name: 'My Next.js App', icon: '/logo.svg' },
         redirectTo: '/',
         onFinish: (data) => {
           try {
-            console.log('Authentication successful', data);
-            localStorage.setItem('stacks-session', JSON.stringify(data));
-            setAddress(data.profile.stxAddress.mainnet);
+            console.log('Raw Authentication Response:', data);
+        
+            if (!data) {
+              throw new Error('Invalid response: No data received.');
+            }
+        
+            if (!data.userSession) {
+              throw new Error('Invalid response: Missing userSession.');
+            }
+        
+            const userData = data.userSession.loadUserData();
+            console.log('User Data:', userData);
+        
+            if (!userData.profile) {
+              throw new Error('Invalid response: Missing profile.');
+            }
+        
+            const stxAddress = userData.profile.stxAddress?.mainnet || 
+                               userData.profile.stxAddress?.testnet ||
+                               userData.profile?.addresses?.mainnet ||
+                               userData.profile?.addresses?.testnet;
+        
+            if (!stxAddress) {
+              throw new Error('Invalid authentication response: Missing stxAddress.');
+            }
+        
+            localStorage.setItem('stacks-session', JSON.stringify(userData));
+            setAddress(stxAddress);
             setIsConnected(true);
           } catch (err) {
+            console.error('Error processing authentication:', err);
             setErrorMessage(`Error processing authentication: ${err.message}`);
           } finally {
             setIsLoading(false);
@@ -99,15 +96,14 @@ const WalletConnector = () => {
           console.log('Authentication canceled');
           setIsLoading(false);
         },
-        // Handle any errors in the connect process
         onRejection: (rejection) => {
-          console.error('Authentication rejected', rejection);
+          console.error('Authentication rejected:', rejection);
           setErrorMessage(`Wallet rejected connection: ${rejection}`);
           setIsLoading(false);
         },
       });
     } catch (error) {
-      console.error('Connection error details:', error);
+      console.error('Wallet connection error:', error);
       setErrorMessage(`Wallet connection error: ${error.message || 'Unknown error'}`);
       setIsLoading(false);
     }
@@ -116,14 +112,14 @@ const WalletConnector = () => {
   const disconnectWallet = () => {
     try {
       localStorage.removeItem('stacks-session');
-      // Clean up any other stored data
-      Object.keys(localStorage).forEach(key => {
+      Object.keys(localStorage).forEach((key) => {
         if (key.startsWith('blockstack-') || key.startsWith('stacks-')) {
           localStorage.removeItem(key);
         }
       });
       setIsConnected(false);
       setAddress(null);
+      console.log('Wallet disconnected'); 
     } catch (error) {
       console.error('Error during disconnect:', error);
       setErrorMessage(`Error during disconnect: ${error.message}`);
@@ -143,14 +139,18 @@ const WalletConnector = () => {
           <small>Try using a different browser or ensure Leather Wallet is installed and unlocked.</small>
         </div>
       )}
-      
+
       {isConnected && address ? (
         <div>
-          <p>Connected: {address}</p>
-          <Button className="w-full cursor-pointer" onClick={disconnectWallet}>Disconnect Wallet</Button>
+          <p className='text-sm'>Connected: {address}</p>
+          <Button className="w-full cursor-pointer" onClick={disconnectWallet}>
+            Disconnect Wallet
+          </Button>
         </div>
       ) : (
-        <Button className="w-full cursor-pointer"  onClick={connectWallet}>Connect  Wallet</Button>
+        <Button className="w-full cursor-pointer" onClick={connectWallet}>
+          Connect Wallet
+        </Button>
       )}
     </div>
   );
