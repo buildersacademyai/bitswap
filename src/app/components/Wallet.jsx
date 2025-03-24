@@ -1,13 +1,13 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import Button from './_components/Button';
+import { BiLoaderAlt } from 'react-icons/bi';
 
 const WalletConnector = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [address, setAddress] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -111,24 +111,30 @@ const WalletConnector = () => {
 
   const disconnectWallet = () => {
     try {
-      localStorage.removeItem('stacks-session');
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith('blockstack-') || key.startsWith('stacks-')) {
-          localStorage.removeItem(key);
-        }
-      });
-      setIsConnected(false);
-      setAddress(null);
-      console.log('Wallet disconnected'); 
+      setIsDisconnecting(true);
+      
+      // Simulate delay to show loading spinner
+      setTimeout(() => {
+        localStorage.removeItem('stacks-session');
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('blockstack-') || key.startsWith('stacks-')) {
+            localStorage.removeItem(key);
+          }
+        });
+        setIsConnected(false);
+        setAddress(null);
+        setIsDisconnecting(false);
+        console.log('Wallet disconnected'); 
+      }, 1000); // 1 second delay
+      
     } catch (error) {
       console.error('Error during disconnect:', error);
       setErrorMessage(`Error during disconnect: ${error.message}`);
+      setIsDisconnecting(false);
     }
   };
 
-  if (isLoading) {
-    return <Button className="w-full cursor-pointer">Establishing Connection...</Button>;
-  }
+  const buttonClasses = "w-full cursor-pointer text-white flex justify-center items-center";
 
   return (
     <div className="wallet-connector">
@@ -141,15 +147,21 @@ const WalletConnector = () => {
       )}
 
       {isConnected && address ? (
-        <div>
-          <p className='text-sm'>Connected: {address}</p>
-          <Button className="w-full cursor-pointer" onClick={disconnectWallet}>
-            Disconnect Wallet
+        <div className='w-full'>
+          <Button className={buttonClasses} onClick={disconnectWallet}>
+            <div className='flex items-center gap-2'>
+              {/* {address} */}
+              Disconnect Wallet
+              {isDisconnecting && <BiLoaderAlt className="animate-spin ml-2" />}
+            </div>
           </Button>
         </div>
       ) : (
-        <Button className="w-full cursor-pointer" onClick={connectWallet}>
-          Connect Wallet
+        <Button className={buttonClasses} onClick={connectWallet}>
+          <div className='flex items-center gap-2'>
+            Connect Wallet
+            {isLoading && <BiLoaderAlt className="animate-spin ml-2" />}
+          </div>
         </Button>
       )}
     </div>

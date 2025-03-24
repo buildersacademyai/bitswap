@@ -3,13 +3,15 @@ import { useState, useRef, useEffect } from "react";
 import { FaFire, FaBell, FaRecycle, FaTools, FaExclamationCircle } from "react-icons/fa";
 import { ScrollParallax } from "react-just-parallax";
 import { RxReset } from "react-icons/rx";
-import { CgArrowsExchangeAltV } from "react-icons/cg";
+import { CgArrowsExchangeAltV, } from "react-icons/cg";
 import {  BiChevronDown, BiRocket } from "react-icons/bi";
 
 import Section from "./_components/Section.jsx";
 import { BottomLine } from "../components/design/Hero.jsx";
 import WalletConnector from "./Wallet.jsx"
 import {currencyIcons,allTitles,allLogos,allNumbers,logos,numbers,titles,exchangeRates, currencies} from "../assets/index.js"
+import Button from "./_components/Button.jsx";
+import { AiOutlineSwap } from "react-icons/ai";
 
 const Hero = () => {
   const parallaxRef = useRef(null);
@@ -145,7 +147,7 @@ const Hero = () => {
         {/* Swap Box with Dropdowns */}
         <div className="bg-gray-700 p-4 rounded-lg relative">
           <div className="flex justify-between items-center relative text-xs font-sans">
-            <span>Selling</span>
+            <span>From:</span>
           </div>
           <div className="flex flex-row items-center justify-center py-2">
             <div className="relative" ref={sellingDropdownRef}>
@@ -226,7 +228,7 @@ const Hero = () => {
           </div>
 
           <div className="flex justify-between items-center relative mt-8 text-xs font-sans">
-            <span>Buying</span>
+            <span>To:</span>
           </div>
           <div className="flex flex-row items-center justify-center py-2">
             <div className="relative" ref={buyingDropdownRef}>
@@ -315,7 +317,12 @@ const Hero = () => {
         </div>
 
         {/* Connect Wallet Button */}
-        <WalletConnector />
+        <Button className="w-full cursor-pointer flex items-center gap-2">
+          <div className="flex items-center gap-2 font-sans ">
+          Swap <AiOutlineSwap size={20} />
+          </div>
+        </Button>
+
       </div>
 
       <BottomLine />

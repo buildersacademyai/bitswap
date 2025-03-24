@@ -5,9 +5,8 @@ import Button from "./_components/Button.jsx";
 import MenuSvg from "../assets/svg/MenuSvg.jsx";
 import { HamburgerMenu } from "./design/Header.jsx";
 import { useState } from "react";
-import { CiSettings } from "react-icons/ci";
-import { FiSearch } from "react-icons/fi";
 import { usePathname } from "next/navigation.js";
+import WalletConnector from "./Wallet.jsx";
 
 const Header = () => {
   const pathname = usePathname();
@@ -39,11 +38,28 @@ const Header = () => {
         <div className="flex items-center justify-between px-5 lg:px-7.5 xl:px-10 max-lg:py-4">
           {/* Left Section: Logo and Navigation */}
           <div className="flex items-center">
-            <a className="block w-[40px] mr-6" href="#hero">
+            <a className="block w-[40px] mr-6" href="/">
               <img src="/logo.svg" width={40} height={40} alt="Brainwave" className="w-[40px] h-[40px]" />
             </a>
             
-            <nav
+            
+          </div>
+          
+          {/* Center Section: Search Bar
+          <div className="hidden lg:flex flex-1 justify-center items-center mx-2">
+            <div className="relative w-full max-w-md">
+              <input
+                type="text"
+                placeholder="Search token or address..."
+                className="w-full font-semibold text-xs font-sans bg-gray-900/60 text-gray-200 py-3 px-4 pl-10 border-2 border-gray-700 rounded-full focus:outline-none focus:border-purple-500 focus:ring-purple-500 "
+                />
+              <FiSearch size={18} className="absolute left-3 top-3  text-gray-400" />
+            </div>
+          </div> */}
+          
+          {/* Right Section: Settings and Connect Wallet */}
+          <div className="flex items-center">
+          <nav
               className={`${
                 openNavigation ? "flex" : "hidden"
               } fixed top-[5rem] left-0 right-0 bottom-0 bg-n-8 lg:static lg:flex lg:bg-transparent`}
@@ -68,32 +84,11 @@ const Header = () => {
               </div>
               <HamburgerMenu />
             </nav>
-          </div>
-          
-          {/* Center Section: Search Bar */}
-          <div className="hidden lg:flex flex-1 justify-center items-center mx-2">
-            <div className="relative w-full max-w-md">
-              <input
-                type="text"
-                placeholder="Search token or address..."
-                className="w-full font-semibold text-xs font-sans bg-gray-900/60 text-gray-200 py-3 px-4 pl-10 border-2 border-gray-700 rounded-full focus:outline-none focus:border-purple-500 focus:ring-purple-500 "
-                />
-              <FiSearch size={18} className="absolute left-3 top-3  text-gray-400" />
-            </div>
-          </div>
-          
-          {/* Right Section: Settings and Connect Wallet */}
-          <div className="flex items-center">
-            <a
-              href="#signup"
-              className="button hidden text-n-1/50 transition-colors hover:text-n-1 lg:block"
-            >
-              <CiSettings size={28} className="text-gray-400 hover:text-gray-200"/>
-            </a>
             <span className="px-3 text-lg text-gray-500 hidden lg:block">|</span>
-            <Button  className="hidden lg:flex text-white" href="#login">
+            {/* <Button  className="hidden lg:flex text-white" href="#login">
               Connect Wallet
-            </Button>
+            </Button> */}
+            <WalletConnector/>
             <Button
               className="ml-auto lg:hidden "
               px="px-3"
