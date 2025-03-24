@@ -19,7 +19,7 @@ const Hero = () => {
   const [receivedAmount, setReceivedAmount] = useState("");
   const [isSellingDropdownOpen, setIsSellingDropdownOpen] = useState(false);
   const [isBuyingDropdownOpen, setIsBuyingDropdownOpen] = useState(false);
-  const currencies = [ "BTC", "STX", "SBTC"];
+
 
   const sellingDropdownRef = useRef(null);
   const buyingDropdownRef = useRef(null);

@@ -6,8 +6,9 @@
 
 
 ;; Import token traits to ensure proper token handling
-;; (use-trait ft-trait  'ST1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRVX023PT.sip-010-trait-ft-standard.sip-010-trait)
-(use-trait amm-trait 'ST1NXBK3K5YYMD6FD41MVNP3JS1GABZ8TRVX023PT.dummy-ft)
+
+(use-trait ft-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
+
 
 ;; ====================================================
 ;; Constants & Error Definitions
@@ -31,6 +32,7 @@
 (define-constant ERR_INSUFFICIENT_TOKEN_BALANCE (err u109))
 (define-constant ERR_OVERFLOW (err u110))
 (define-constant ERR_TRANSFER_FAILED (err u111))
+(define-constant ERR_NOT_ACTIVE (err u112))
 
 ;; ====================================================
 ;; Data Variables
@@ -38,13 +40,13 @@
 (define-data-var reserve-a uint u0)
 (define-data-var reserve-b uint u0)
 (define-data-var total-liquidity uint u0)
-(define-data-var token-a principal 'SP000000000000000000002Q6VF78.dummy-ft)
-(define-data-var token-b principal 'SP000000000000000000002Q6VF78.dummy-ft)
 
 ;; Track each provider's liquidity balance.
 (define-map provider-liquidity principal uint)
 ;; Record the block height when a provider last added liquidity.
 (define-map liquidity-lock principal uint)
+
+(define-map pool { token-a: principal, token-b: principal } { total-amount: uint, token-a: uint, token-b: uint})
 
 ;; Extended operational metrics:
 (define-data-var total-swap-count uint u0)
@@ -71,7 +73,7 @@
 (define-private (assert-pool-active)
   (if (var-get pool-active)
       true
-      (err u112)))  ;; New error code for inactive pool
+      false))  ;; New error code for inactive pool
 
 ;; Calculate the output amount using the constant product formula with fee.
 (define-private (calc-output (amount-in uint) (reserve-in uint) (reserve-out uint))
@@ -81,11 +83,11 @@
 
 ;; Check that the current block-height is within the deadline.
 (define-private (check-deadline (deadline uint))
-  (<= block-height deadline))
+  (<= stacks-block-height deadline))
 
 ;; Transfer tokens using ft-transfer trait - returns true on success
 (define-private (transfer-token (token-contract <ft-trait>) (amount uint) (sender principal) (recipient principal))
-  (let ((transfer-result (contract-call? token-contract transfer amount sender recipient none)))
+  (let ((transfer-result (as-contract (contract-call? token-contract transfer amount sender recipient none))))
     (is-ok transfer-result))) 
 
 ;; Validate basic inputs and reserves
@@ -96,24 +98,6 @@
 
 (define-private (min (a uint) (b uint))
   (if (< a b) a b))
-
-
-
-
-;; Square root integer implementation for liquidity calculation
-;; (define-private (sqrti (n uint))
-;;   (let ((x (/ (+ n u1) u2)))
-;;     (sqrti-iter x n)))
-
-;; Define a private helper function for square root calculation
-(define-private (sqrti (n uint) (x uint))
-  (let ((y (/ (+ x (/ n x)) u2)))
-    (if (>= x y)
-        x
-        (sqrti n y))))
-
-(define-private (sqrti-init (n uint))
-  (sqrti n (/ (+ n u1) u2)))
 
 
 ;; Calculate the optimal liquidity tokens based on the token amounts
@@ -131,21 +115,12 @@
           (/ (* amount-a current-liquidity) current-reserve-a)
           (/ (* amount-b current-liquidity) current-reserve-b)))))
 
-
-;; (define-private (sqrti-iter (x uint) (n uint))
-;;   (let ((y (/ (+ x (/ n x)) u2)))
-;;     (if (>= x y)
-;;         x
-;;         (sqrti-iter y n))))
-
-
-
 ;; ====================================================
 ;; Public Functions AMM Trait Implementation
 ;; ====================================================
 
 ;; 1. Add Liquidity with a Liquidity Lock to Deter Rug Pulls.
-(define-public (add-liquidity (amount-a uint) (amount-b uint) (deadline uint))
+(define-public (add-liquidity (token-a-contract <ft-trait>) (token-b-contract <ft-trait>) (amount-a uint) (amount-b uint) (deadline uint))
   (begin
     (asserts! (assert-pool-active) (err u112))
     (asserts! (check-deadline deadline) ERR_DEADLINE_EXPIRED)
@@ -155,8 +130,8 @@
           (current-reserve-a (var-get reserve-a))
           (current-reserve-b (var-get reserve-b))
           (current-liquidity (var-get total-liquidity))
-          (token-a-contract (as-contract (unwrap-panic (var-get token-a))))
-          (token-b-contract (as-contract (unwrap-panic (var-get token-b))))
+          ;; (token-a-contract  (var-get token-a))
+          ;; (token-b-contract  (var-get token-b))
          )
       
       ;; Calculate liquidity tokens to mint
@@ -181,13 +156,13 @@
         ;; Update the provider's balance and record the deposit block-height
         (map-set provider-liquidity tx-sender 
                 (+ (default-to u0 (map-get? provider-liquidity tx-sender)) minted-liquidity))
-        (map-set liquidity-lock tx-sender block-height)
+        (map-set liquidity-lock tx-sender stacks-block-height)
         
         (ok minted-liquidity)))))
 
 
 ;; 2. Remove Liquidity Can Only Withdraw After the Liquidity Lock Period.
-(define-public (remove-liquidity (liquidity uint) (deadline uint))
+(define-public (remove-liquidity (token-a-contract <ft-trait>) (token-b-contract <ft-trait>) (liquidity uint) (deadline uint))
   (begin
     (asserts! (assert-pool-active) (err u112))
     (asserts! (check-deadline deadline) ERR_DEADLINE_EXPIRED)
@@ -197,12 +172,12 @@
           (current-liquidity (var-get total-liquidity))
           (provider-liq (default-to u0 (map-get? provider-liquidity tx-sender)))
           (lock-time (default-to u0 (map-get? liquidity-lock tx-sender)))
-          (token-a-contract (as-contract (unwrap-panic (var-get token-a))))
-          (token-b-contract (as-contract (unwrap-panic (var-get token-b))))
+          ;; (token-a-contract (unwrap-panic (var-get token-a)))
+          ;; (token-b-contract (unwrap-panic (var-get token-b)))
          )
       
       (asserts! (>= provider-liq liquidity) ERR_INSUFFICIENT_LIQUIDITY)
-      (asserts! (>= block-height (+ lock-time LIQUIDITY_LOCK_PERIOD)) ERR_LIQUIDITY_LOCKED)
+      (asserts! (>= stacks-block-height (+ lock-time LIQUIDITY_LOCK_PERIOD)) ERR_LIQUIDITY_LOCKED)
       
       (let (
             (amount-a-out (/ (* (var-get reserve-a) liquidity) current-liquidity))
@@ -224,7 +199,7 @@
         (ok (tuple (amount-a amount-a-out) (amount-b amount-b-out)))))))
 
 ;; 3. Swap Token A for Token B with Deadline and Minimum Output Protection.
-(define-public (swap-a-to-b (amount-in uint) (min-out uint) (deadline uint))
+(define-public (swap-a-to-b (token-a-contract <ft-trait>) (token-b-contract <ft-trait>) (amount-in uint) (min-out uint) (deadline uint))
   (begin
     (asserts! (assert-pool-active) (err u112))
     (asserts! (check-deadline deadline) ERR_DEADLINE_EXPIRED)
@@ -233,7 +208,8 @@
     (let (
           (current-reserve-a (var-get reserve-a))
           (current-reserve-b (var-get reserve-b))
-          (token-a-contract (as-contract (unwrap-panic (var-get token-a))))
+          ;; (token-a-contract (unwrap-panic (var-get token-a)))
+          ;; (token-b-contract (unwrap-panic (var-get token-b)))
          )
       
       (let ((amount-out (calc-output amount-in current-reserve-a current-reserve-b)))
@@ -254,12 +230,12 @@
         (var-set total-swap-count (+ (var-get total-swap-count) u1))
         (var-set total-swap-volume-a (+ (var-get total-swap-volume-a) amount-in))
         (var-set total-swap-volume-b (+ (var-get total-swap-volume-b) amount-out))
-        (var-set last-swap-block block-height)
+        (var-set last-swap-block stacks-block-height)
         
         (ok amount-out)))))
 
 ;; 4. Swap Token B for Token A with Deadline and Minimum Output Protection.
-(define-public (swap-b-to-a (amount-in uint) (min-out uint) (deadline uint))
+(define-public (swap-b-to-a (token-a-contract <ft-trait>) (token-b-contract <ft-trait>) (amount-in uint) (min-out uint) (deadline uint))
   (begin
     (asserts! (assert-pool-active) (err u112))
     (asserts! (check-deadline deadline) ERR_DEADLINE_EXPIRED)
@@ -268,8 +244,8 @@
     (let (
           (current-reserve-a (var-get reserve-a))
           (current-reserve-b (var-get reserve-b))
-          (token-b-contract (as-contract (unwrap-panic (var-get token-b))))
-          (token-a-contract (as-contract (unwrap-panic (var-get token-a))))
+          ;; (token-b-contract (unwrap-panic (var-get token-b)))
+          ;; (token-a-contract (unwrap-panic (var-get token-a)))
          )
       
       (let ((amount-out (calc-output amount-in current-reserve-b current-reserve-a)))
@@ -290,6 +266,7 @@
         (var-set total-swap-count (+ (var-get total-swap-count) u1))
         (var-set total-swap-volume-b (+ (var-get total-swap-volume-b) amount-in))
         (var-set total-swap-volume-a (+ (var-get total-swap-volume-a) amount-out))
-        (var-set last-swap-block block-height)
+        (var-set last-swap-block stacks-block-height)
         
         (ok amount-out)))))
+
