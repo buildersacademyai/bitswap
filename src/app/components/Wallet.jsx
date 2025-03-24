@@ -1,3 +1,4 @@
+"use client"
 import { useState, useEffect } from 'react';
 import Button from './_components/Button';
 import { BiLoaderAlt } from 'react-icons/bi';
