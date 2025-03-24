@@ -8,6 +8,7 @@
  import github from "./socials/github.svg";
  import { FaBitcoin } from "react-icons/fa";
  import { SiTether } from "react-icons/si";
+import Image from "next/image";
 export {
    discordBlack,
    facebook,
@@ -45,9 +46,10 @@ export {
  };
 
 
-  export const logos = ["/bc.svg", "/sbtc.svg", "/stx.svg" ];
+  export const logos = ["/bc.svg", "/sbtc.png", "/stx.svg" ];
   export const numbers = ["1", "2", "3"];
-  export const titles = ["Bitcoin", "SBTC", "STX"];
+  export const titles = ["BTC", "SBTC", "STX"];
+  export const currencies = ["BTC","STX","SBTC"]
 
   // Repeat the arrays to create a seamless loop
   export const allLogos = [...logos, ...logos, ...logos, ...logos];
@@ -56,8 +58,8 @@ export {
 
    export const currencyIcons = {
       USDC: <SiTether className="text-blue-400" />,
-      SBTC: <img src="/sbtc.svg" alt="SBTC" className="w-4 h-4"/>,
-      STX: <img src="/stx.svg" alt="STX" className="w-4 h-4"/>,
+      SBTC: <Image src="/sbtc.png" alt="SBTC" width={4} height={4} className="w-4 h-4"/>,
+      STX: <Image src="/stx.svg" alt="STX" width={4} height={4} className="w-4 h-4"/>,
       BTC: <FaBitcoin className="text-yellow-500" />,
     };
 

@@ -9,7 +9,7 @@ import {  BiChevronDown, BiRocket } from "react-icons/bi";
 import Section from "./_components/Section.jsx";
 import { BottomLine } from "../components/design/Hero.jsx";
 import WalletConnector from "./Wallet.jsx"
-import {currencyIcons,allTitles,allLogos,allNumbers,logos,numbers,titles,exchangeRates} from "../assets/index.js"
+import {currencyIcons,allTitles,allLogos,allNumbers,logos,numbers,titles,exchangeRates, currencies} from "../assets/index.js"
 
 const Hero = () => {
   const parallaxRef = useRef(null);
@@ -19,7 +19,6 @@ const Hero = () => {
   const [receivedAmount, setReceivedAmount] = useState("");
   const [isSellingDropdownOpen, setIsSellingDropdownOpen] = useState(false);
   const [isBuyingDropdownOpen, setIsBuyingDropdownOpen] = useState(false);
-
 
   const sellingDropdownRef = useRef(null);
   const buyingDropdownRef = useRef(null);

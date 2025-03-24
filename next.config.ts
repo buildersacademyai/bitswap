@@ -1,4 +1,6 @@
-const nextConfig = {
+import { NextConfig } from 'next'; // Import NextConfig if needed
+
+const nextConfig: NextConfig = {
   webpack(config, { isServer }) {
     if (!isServer) {
       config.resolve.fallback = {
