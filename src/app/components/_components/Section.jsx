@@ -1,5 +1,5 @@
 import React from "react";
-import SectionSvg from "../assets/svg/SectionSvg";
+import SectionSvg from "../../assets/svg/SectionSvg";
 const Section = ({
   className,
   id,

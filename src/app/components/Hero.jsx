@@ -1,16 +1,15 @@
 "use client"
 import { useState, useRef, useEffect } from "react";
 import { FaFire, FaBell, FaRecycle, FaTools, FaExclamationCircle } from "react-icons/fa";
-import Section from "./Section.jsx";
-import { BottomLine } from "../components/design/Hero.jsx";
 import { ScrollParallax } from "react-just-parallax";
-import Button from "./Button.jsx";
 import { RxReset } from "react-icons/rx";
 import { CgArrowsExchangeAltV } from "react-icons/cg";
-import { FaBitcoin } from "react-icons/fa";
-import { SiTether } from "react-icons/si";
 import {  BiChevronDown, BiRocket } from "react-icons/bi";
-// import background from "/back.jpg";
+
+import Section from "./_components/Section.jsx";
+import { BottomLine } from "../components/design/Hero.jsx";
+import WalletConnector from "./Wallet.jsx"
+import {currencyIcons,allTitles,allLogos,allNumbers,logos,numbers,titles,exchangeRates} from "../assets/index.js"
 
 const Hero = () => {
   const parallaxRef = useRef(null);
@@ -20,59 +19,11 @@ const Hero = () => {
   const [receivedAmount, setReceivedAmount] = useState("");
   const [isSellingDropdownOpen, setIsSellingDropdownOpen] = useState(false);
   const [isBuyingDropdownOpen, setIsBuyingDropdownOpen] = useState(false);
-  const currencies = ["USDC", "BTC", "STX", "SBTC"];
+  const currencies = [ "BTC", "STX", "SBTC"];
 
-  // Refs for dropdowns
   const sellingDropdownRef = useRef(null);
   const buyingDropdownRef = useRef(null);
-
-  // Currency icons mapping
-  const currencyIcons = {
-    USDC: <SiTether className="text-blue-400" />,
-    SBTC: <img src="/sbtc.svg" alt="SBTC" className="w-4 h-4"/>,
-    STX: <img src="/stx.svg" alt="STX" className="w-4 h-4"/>,
-    BTC: <FaBitcoin className="text-yellow-500" />,
-  };
-
-  const exchangeRates = {
-    USDC: {
-      STX: 13.5,      
-      SBTC: 0.00035,   
-      BTC: 0.000018,   
-      USDC: 1          
-    },
-    STX: {
-      USDC: 0.074,     
-      SBTC: 0.00003,   
-      BTC: 0.0000015,  
-      STX: 1           
-    },
-    SBTC: {
-      USDC: 3000,      
-      STX: 42000,     
-      BTC: 0.06,     
-      SBTC: 1          
-    },
-    BTC: {
-      USDC: 63000,     
-      STX: 810000,     
-      SBTC: 22,       
-      BTC: 1           
-    }
-  };
-  
-
-  // Logo paths
-  const logos = ["/bc.svg", "/sbtc.svg", "/stx.svg" ];
-  const numbers = ["1", "2", "3"];
-  const titles = ["Bitcoin", "SBTC", "STX"];
-
-  // Repeat the arrays to create a seamless loop
-  const allLogos = [...logos, ...logos, ...logos, ...logos];
-  const allNumbers = [...numbers, ...numbers, ...numbers, ...numbers];
-  const allTitles = [...titles, ...titles, ...titles, ...titles];
-
-  // Calculate received amount whenever amount, selling, or buying changes
+ 
   useEffect(() => {
     if (amount && !isNaN(amount)) {
       const rate = exchangeRates[selling][buying];
@@ -84,8 +35,8 @@ const Hero = () => {
   }, [amount, selling, buying]);
 
   const handleReset = () => {
-    setAmount(""); // Resets the input field
-    setReceivedAmount(""); // Reset received amount
+    setAmount(""); 
+    setReceivedAmount(""); 
     setSelling("BTC");
     setBuying("STX");
   };
@@ -204,7 +155,7 @@ const Hero = () => {
                   setIsSellingDropdownOpen(!isSellingDropdownOpen);
                   setIsBuyingDropdownOpen(false); // Close the other dropdown
                 }}
-                className=" text-white px-4 py-2 rounded-md bg-green-500/70 transition-all duration-100 flex items-center gap-2"
+                className=" text-white w-32 px-4 py-2 rounded-md bg-green-500/70 transition-all duration-100 flex items-center gap-2"
               >
                 {currencyIcons[selling]}
                 {selling}
@@ -231,21 +182,19 @@ const Hero = () => {
               )}
             </div>
             <input
-  type="number"
-  placeholder="0.00"
-  className="w-full bg-transparent text-white text-2xl p-2 outline-none text-right"
-  value={amount}
-  onChange={(e) => setAmount(e.target.value)}
-  style={{
-    WebkitAppearance: "none",  // Chrome, Safari
-    MozAppearance: "textfield", // Firefox
-    appearance: "none",        // Other browsers
-    margin: 0,
-    paddingRight: "1rem",      // Optional: to add space for the text alignment
-  }}
-/>
-
-
+               type="number"
+               placeholder="0.00"
+               className="w-full bg-transparent text-white text-2xl p-2 outline-none text-right"
+               value={amount}
+               onChange={(e) => setAmount(e.target.value)}
+               style={{
+                  WebkitAppearance: "none",
+                  MozAppearance: "textfield", 
+                appearance: "none",     
+                  margin: 0,
+                  paddingRight: "1rem",      
+                }}
+              />
 
           </div>
           <span className="flex items-center justify-end text-xs text-gray-400">
@@ -266,11 +215,11 @@ const Hero = () => {
           <div className="flex justify-center items-center relative z-20 mt-8">
             <hr className="border-2 w-full rounded-full" />
             <div 
-              className="bg-gray-800 rounded-full p-3 absolute -my-6 text-amber-400/90 hover:border-amber-400/90 hover:bg-amber-400 border-gray-900 border-2 cursor-pointer transition-all duration-0"
+              className="bg-gray-800 rounded-full p-3 absolute -my-6 text-purple-400/90 hover:border-purple-600 hover:bg-purple-600 border-gray-900 border-2 cursor-pointer transition-all duration-150 "
               onClick={handleExchange}
             >
               <div className="relative flex items-center">
-                <button className="transition-all duration-75 text-white">
+                <button className="transition-all duration-75 text-white cursor-pointer">
                   <CgArrowsExchangeAltV className="text-xl" size={20} />
                 </button>
               </div>
@@ -287,7 +236,7 @@ const Hero = () => {
                   setIsBuyingDropdownOpen(!isBuyingDropdownOpen);
                   setIsSellingDropdownOpen(false); // Close the other dropdown
                 }}
-                className="text-white px-4 py-2 rounded-md bg-purple-600 hover:border-purple-600 transition-all duration-100 flex items-center gap-2"
+                className="text-white w-32 px-4 py-2 rounded-md bg-purple-600 hover:border-purple-600 transition-all duration-100 flex items-center gap-2"
               >
                 {currencyIcons[buying]}
                 {buying}
@@ -342,8 +291,6 @@ const Hero = () => {
     <span></span>
   )}
 </div>
-
-
       </div>
 
         {/* Slippage & Routing */}
@@ -369,7 +316,7 @@ const Hero = () => {
         </div>
 
         {/* Connect Wallet Button */}
-        <Button className="w-full cursor-pointer">Connect Wallet</Button>
+        <WalletConnector />
       </div>
 
       <BottomLine />

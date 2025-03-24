@@ -1,7 +1,7 @@
 "use client"
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
 import { navigation } from "../constants/index.js";
-import Button from "./Button.jsx";
+import Button from "./_components/Button.jsx";
 import MenuSvg from "../assets/svg/MenuSvg.jsx";
 import { HamburgerMenu } from "./design/Header.jsx";
 import { useState } from "react";
@@ -91,7 +91,7 @@ const Header = () => {
               <CiSettings size={28} className="text-gray-400 hover:text-gray-200"/>
             </a>
             <span className="px-3 text-lg text-gray-500 hidden lg:block">|</span>
-            <Button className="hidden lg:flex text-white" href="#login">
+            <Button  className="hidden lg:flex text-white" href="#login">
               Connect Wallet
             </Button>
             <Button
@@ -101,6 +101,7 @@ const Header = () => {
             >
               <MenuSvg openNavigation={openNavigation} />
             </Button>
+
           </div>
         </div>
       </div>
