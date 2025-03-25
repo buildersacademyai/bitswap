@@ -39,7 +39,7 @@ const WalletConnector = () => {
 
       setIsLoading(false);
     }
-  }, []);
+  }, [isConnected]);
 
 
   const connectWallet = async () => {
