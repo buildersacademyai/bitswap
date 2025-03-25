@@ -1,15 +1,13 @@
 ;; ====================================================
-;; AMM Blueprint with Traits, AntiRug Pull, and Extended Data Tracking
+;; AMM with Traits, AntiRug Pull, and Extended Data Tracking
 ;; ====================================================
-
-;; Define the AMM Trait interface that external contracts or users can expect.
 
 
 ;; Import token traits to ensure proper token handling
 
 (use-trait ft-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
 
-
+.profile.stxAddress.testnet
 ;; ====================================================
 ;; Constants & Error Definitions
 ;; ====================================================
