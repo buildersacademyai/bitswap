@@ -92,20 +92,6 @@ const WalletConnector = () => {
     }
   };
 
-  const togglePoolActivation = async () => {
-
-    const { request } = await import('@stacks/connect');
-
-    const response = await request('stx_callContract', {
-      contractAddress: 'ST1VZ3YGJKKC8JSSWMS4EZDXXJM7QWRBEZ0ZWM64E',
-      contractName: 'bit-swap',
-      functionName: 'toggle-pool-active',
-      functionArgs: [null], // array of Clarity values
-      network: 'testnet'
-    });
-    
-    console.log('Transaction ID:', response.txid)
-  }
 
   const buttonClasses = "w-full cursor-pointer text-white flex justify-center items-center";
 
