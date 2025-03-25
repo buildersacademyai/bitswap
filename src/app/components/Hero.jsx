@@ -20,6 +20,7 @@ const Hero = () => {
   const [isBuyingDropdownOpen, setIsBuyingDropdownOpen] = useState(false);
   const [btcPrice, setBtcPrice] = useState(null);
   const [stxPrice, setStxPrice] = useState(null);
+  const [usdcPrice, setUsdcPrice] = useState(1);
 
   const sellingDropdownRef = useRef(null);
   const buyingDropdownRef = useRef(null);
@@ -32,64 +33,63 @@ const Hero = () => {
 
     btcSocket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      setBtcPrice(parseFloat(data.c)); // 'c' is the current price from Binance WebSocket
+      setBtcPrice(parseFloat(data.c));
     };
 
     stxSocket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      setStxPrice(parseFloat(data.c)); // 'c' is the current price from Binance WebSocket
+      setStxPrice(parseFloat(data.c)); 
     };
 
     usdcSocket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      setUsdcPrice(parseFloat(data.c)); // Fetch USDC price for more accurate USD conversion
+      setUsdcPrice(parseFloat(data.c)); 
       usdcSocket.close();
     };
 
-    // Clean up the WebSocket connections on component unmount
     return () => {
       btcSocket.close();
       stxSocket.close();
+      usdcSocket.close();
     };
   }, []);
 
-   // Calculate USD value based on real-time prices
    const calculateUSDValue = (amount, currency) => {
     if (!amount) return 0;
 
     switch(currency) {
       case "BTC":
+      case "SBTC":
         return parseFloat(amount) * btcPrice;
       case "STX":
         return parseFloat(amount) * stxPrice;
       case "USDC":
         return parseFloat(amount);
       default:
-        // Fallback to predefined exchange rates
         return parseFloat(amount) * (exchangeRates[currency]?.["USDC"] || 1);
     }
   };
 
-  // Update conversion when amount, selling/buying currencies, or prices change
-  useEffect(() => {
-    if (amount && !isNaN(amount) && btcPrice && stxPrice) {
-      let convertedAmount;
-      
-      // Determine conversion based on currencies and their real-time prices
-      if (selling === "BTC" && buying === "STX") {
-        convertedAmount = (parseFloat(amount) * btcPrice / stxPrice ).toFixed(4);
-      } else if (selling === "STX" && buying === "BTC") {
-        convertedAmount = (parseFloat(amount) * stxPrice / btcPrice ).toFixed(4);
-      } else {
-        const rate = exchangeRates[selling][buying];
-        convertedAmount = (parseFloat(amount) * rate ).toFixed(4);
-      }
-      
-      setReceivedAmount(convertedAmount);
+ useEffect(() => {
+  if (amount && !isNaN(amount) && btcPrice && stxPrice) {
+    let convertedAmount;
+    
+    if ((selling === "BTC" || selling === "SBTC") && buying === "STX") {
+      convertedAmount = (parseFloat(amount) * btcPrice / stxPrice).toFixed(4);
+    } else if (selling === "STX" && (buying === "BTC" || buying === "SBTC")) {
+      convertedAmount = (parseFloat(amount) * stxPrice / btcPrice).toFixed(4);
+    } else if ((selling === "BTC" || selling === "SBTC") && (buying === "BTC" || buying === "SBTC")) {
+      convertedAmount = parseFloat(amount).toFixed(4);
     } else {
-      setReceivedAmount("");
+      const rate = exchangeRates[selling][buying];
+      convertedAmount = (parseFloat(amount) * rate).toFixed(4);
     }
-  }, [amount, selling, buying, btcPrice, stxPrice]);
+    
+    setReceivedAmount(convertedAmount);
+  } else {
+    setReceivedAmount("");
+  }
+}, [amount, selling, buying, btcPrice, stxPrice]);
 
   const handleReset = () => {
     setAmount(""); 
@@ -151,7 +151,7 @@ const Hero = () => {
       <div className="w-[450px] bg-gray-800 p-8 rounded-lg shadow-lg text-white relative z-10 mt-10 ">
         <Logo/>
 
-        {/* Tabs */}
+
         <div className="flex justify-center items-center mb-4 mx-2 mt-4">
           <span className="text-green-400 font-sans font-semibold flex flex-row items-center justify-center gap-2 hover:cursor-pointer">
           <AiOutlineStock size={22} /> Trading

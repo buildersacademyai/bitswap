@@ -70,7 +70,7 @@ const Header = () => {
                  key={item.id}
                  href={item.url}
                  onClick={handleClick}
-                 className={`block relative font-code text-2xl uppercase transition-colors font-sans px-6 py-6 md:py-8 lg:-mr-0.25 lg:text-xs lg:font-semibold ${
+                 className={`flex items-center justify-center gap-1 relative font-code text-2xl uppercase transition-colors font-sans px-6 py-6 md:py-8 lg:-mr-0.25 lg:text-xs lg:font-semibold ${
                    item.onlyMobile ? "lg:hidden" : ""
                  } ${
                    item.url === pathname || (pathname === "/" && item.url === "/trading")
@@ -78,7 +78,9 @@ const Header = () => {
                      : "text-gray-400"
                  } hover:text-white lg:leading-5 xl:px-8`}
                >
+                {item.icon}
                  {item.title}
+                 
                </a>
                
                 ))}

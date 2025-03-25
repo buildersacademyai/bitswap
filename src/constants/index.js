@@ -1,26 +1,36 @@
+import { AiOutlineStock } from 'react-icons/ai';
+import { GoStack } from 'react-icons/go';
+import { HiOutlineDocumentDuplicate } from 'react-icons/hi';
+import { IoMdInformationCircleOutline } from 'react-icons/io';
+
 
 export const navigation = [
   {
     id: "0",
     title: "Trading",
     url: "/",
+    icon: <AiOutlineStock size={16}/>
   },
   {
     id: "2",
     title: "Stacking",
     url: "/stacking",
+    icon: <GoStack size={16}/>,
   },
   {
     id: "1",
     title: "White Paper",
     url: "/white_paper",
+    icon: <HiOutlineDocumentDuplicate size={16}/>,
   },
   {
     id: "3",
     title: "About",
     url: "/about",
+    icon: <IoMdInformationCircleOutline size={16}/>,
   },
 ];
+
 
 export const socials = [
   {
