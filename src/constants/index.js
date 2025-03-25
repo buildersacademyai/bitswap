@@ -3,22 +3,22 @@ export const navigation = [
   {
     id: "0",
     title: "Trading",
-    url: "#trading",
+    url: "/",
   },
   {
     id: "2",
-    title: "Pool",
-    url: "#pool",
+    title: "Stacking",
+    url: "/stacking",
   },
   {
     id: "1",
-    title: "Preps",
-    url: "#preps",
+    title: "White Paper",
+    url: "/white_paper",
   },
   {
     id: "3",
-    title: "More",
-    url: "#more",
+    title: "About",
+    url: "/about",
   },
 ];
 

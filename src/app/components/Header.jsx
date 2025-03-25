@@ -1,6 +1,6 @@
 "use client"
 import { disablePageScroll, enablePageScroll } from "scroll-lock";
-import { navigation } from "../constants/index.js";
+import { navigation } from "../../constants/index.js";
 import Button from "./_components/Button.jsx";
 import MenuSvg from "../assets/svg/MenuSvg.jsx";
 import { HamburgerMenu } from "./design/Header.jsx";
