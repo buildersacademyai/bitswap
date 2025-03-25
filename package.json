@@ -11,8 +11,10 @@
   "dependencies": {
     "@stacks/auth": "^7.0.5",
     "@stacks/blockchain-api-client": "^8.7.0",
+    "@stacks/common": "^7.0.2",
     "@stacks/connect": "^8.1.7",
     "@stacks/connect-react": "^23.0.10",
+    "@stacks/transactions": "^7.0.5",
     "@stacks/wallet-sdk": "^7.0.5",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",

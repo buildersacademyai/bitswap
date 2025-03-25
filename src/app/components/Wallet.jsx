@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import Button from './_components/Button';
 import { BiLoaderAlt } from 'react-icons/bi';
+import { bytesToUtf8, hexToBytes } from '@stacks/common';
 
 const WalletConnector = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -25,13 +26,12 @@ const WalletConnector = () => {
       }
 
       try {
-        const storedSession = localStorage.getItem('stacks-session');
+        const storedSession = localStorage.getItem('@stacks/connect');
+        const hex = JSON.parse(bytesToUtf8(hexToBytes(storedSession)));
+        console.log('hello session data' )
         if (storedSession) {
-          const parsed = JSON.parse(storedSession);
-          if (parsed?.profile?.stxAddress) {
-            setAddress(parsed.profile.stxAddress.mainnet || parsed.profile.stxAddress.testnet);
+            setAddress(hex.addresses.stx[0].address);
             setIsConnected(true);
-          }
         }
       } catch (error) {
         console.error('Error checking previous connection:', error);
@@ -39,71 +39,29 @@ const WalletConnector = () => {
 
       setIsLoading(false);
     }
-  }, []);
+  }, [isConnected]);
+
 
   const connectWallet = async () => {
     setIsLoading(true);
     setErrorMessage('');
-
+    console.log("hello connect")
     try {
-      const { showConnect } = await import('@stacks/connect');
+      const { isConnected, connect, getLocalStorage} = await import('@stacks/connect');
 
-      if (!showConnect) {
-        throw new Error('Failed to load @stacks/connect module.');
+      if (!isConnected()) {
+        const response = await connect();
+        const data = getLocalStorage();
+
+        console.log("response", response)
+        console.log("isConneted", isConnected())
+        console.log("data", data);
+
+        console.log("Data stx", data.addresses.stx[0].address)
+        setAddress(data.addresses.stx.address)
+        setIsConnected(true)
+        setIsLoading(false)
       }
-
-      showConnect({
-        appDetails: { name: 'My Next.js App', icon: '/logo.svg' },
-        redirectTo: '/',
-        onFinish: (data) => {
-          try {
-            console.log('Raw Authentication Response:', data);
-        
-            if (!data) {
-              throw new Error('Invalid response: No data received.');
-            }
-        
-            if (!data.userSession) {
-              throw new Error('Invalid response: Missing userSession.');
-            }
-        
-            const userData = data.userSession.loadUserData();
-            console.log('User Data:', userData);
-            console.log(userData.profile.stxAddress.mainnet)
-        
-            if (!userData.profile) {
-              throw new Error('Invalid response: Missing profile.');
-            }
-        
-            const stxAddress = userData.profile.stxAddress?.mainnet || 
-                               userData.profile.stxAddress?.testnet ||
-                               userData.profile?.addresses?.mainnet ||
-                               userData.profile?.addresses?.testnet;
-        
-            if (!stxAddress) {
-              throw new Error('Invalid authentication response: Missing stxAddress.');
-            }
-        
-            localStorage.setItem('stacks-session', JSON.stringify(userData));
-            setAddress(stxAddress);
-            setIsConnected(true);
-          } catch (err) {
-            console.error('Error processing authentication:', err);
-            setErrorMessage(`Error processing authentication: ${err.message}`);
-          } finally {
-            setIsLoading(false);
-          }
-        },
-        onCancel: () => {
-          console.log('Authentication canceled');
-          setIsLoading(false);
-        },
-        onRejection: (rejection) => {
-          console.error('Authentication rejected:', rejection);
-          setErrorMessage(`Wallet rejected connection: ${rejection}`);
-          setIsLoading(false);
-        },
-      });
     } catch (error) {
       console.error('Wallet connection error:', error);
       setErrorMessage(`Wallet connection error: ${error.message || 'Unknown error'}`);
@@ -111,16 +69,16 @@ const WalletConnector = () => {
     }
   };
 
+
   const disconnectWallet = () => {
     try {
       setIsDisconnecting(true);
-      setTimeout(() => {
-        localStorage.removeItem('stacks-session');
-        Object.keys(localStorage).forEach((key) => {
-          if (key.startsWith('blockstack-') || key.startsWith('stacks-')) {
-            localStorage.removeItem(key);
-          }
-        });
+      
+      // Simulate delay to show loading spinner
+      setTimeout( async () => {
+        const { disconnect } = await import('@stacks/connect');
+        
+        disconnect();
         setIsConnected(false);
         setAddress(null);
         setIsDisconnecting(false);
@@ -133,6 +91,21 @@ const WalletConnector = () => {
       setIsDisconnecting(false);
     }
   };
+
+  const togglePoolActivation = async () => {
+
+    const { request } = await import('@stacks/connect');
+
+    const response = await request('stx_callContract', {
+      contractAddress: 'ST1VZ3YGJKKC8JSSWMS4EZDXXJM7QWRBEZ0ZWM64E',
+      contractName: 'bit-swap',
+      functionName: 'toggle-pool-active',
+      functionArgs: [null], // array of Clarity values
+      network: 'testnet'
+    });
+    
+    console.log('Transaction ID:', response.txid)
+  }
 
   const buttonClasses = "w-full cursor-pointer text-white flex justify-center items-center";
 
