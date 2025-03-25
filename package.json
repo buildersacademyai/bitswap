@@ -27,7 +27,8 @@
     "scroll-lock": "^2.1.5",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
-    "webpack": "^5.98.0"
+    "webpack": "^5.98.0",
+    "ws": "^8.18.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

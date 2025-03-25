@@ -38,8 +38,8 @@ const Header = () => {
         <div className="flex items-center justify-between px-5 lg:px-7.5 xl:px-10 max-lg:py-4">
           {/* Left Section: Logo and Navigation */}
           <div className="flex items-center">
-            <a className="block w-[40px] mr-6" href="/">
-              <img src="/logo.svg" width={40} height={40} alt="Brainwave" className="w-[40px] h-[40px]" />
+            <a className="block w-[120px] mr-6" href="/">
+              <img src="/trading.svg" width={80} height={50} alt="Brainwave" className="w-[120px] h-[80px]" />
             </a>
             
             
@@ -66,28 +66,26 @@ const Header = () => {
             >
               <div className="relative z-2 flex flex-col items-center justify-center m-auto lg:flex-row">
                 {navigation.map((item) => (
-                  <a
-                    key={item.id}
-                    href={item.url}
-                    onClick={handleClick}
-                    className={`block relative font-code text-2xl uppercase text-n-1 transition-colors text-gray-400 font-sans hover:text-white hover:text-color-1 ${
-                      item.onlyMobile ? "lg:hidden" : ""
-                    } px-6 py-6 md:py-8 lg:-mr-0.25 lg:text-xs lg:font-semibold ${
-                      item.url === pathname.hash
-                        ? "z-2 lg:text-n-1"
-                        : "lg:text-n-1/50"
-                    } lg:leading-5 lg:hover:text-n-1 xl:px-8`}
-                  >
-                    {item.title}
-                  </a>
+                 <a
+                 key={item.id}
+                 href={item.url}
+                 onClick={handleClick}
+                 className={`block relative font-code text-2xl uppercase transition-colors font-sans px-6 py-6 md:py-8 lg:-mr-0.25 lg:text-xs lg:font-semibold ${
+                   item.onlyMobile ? "lg:hidden" : ""
+                 } ${
+                   item.url === pathname || (pathname === "/" && item.url === "/trading")
+                     ? "text-white" // Active link (white color)
+                     : "text-gray-400"
+                 } hover:text-white lg:leading-5 xl:px-8`}
+               >
+                 {item.title}
+               </a>
+               
                 ))}
               </div>
               <HamburgerMenu />
             </nav>
             <span className="px-3 text-lg text-gray-500 hidden lg:block">|</span>
-            {/* <Button  className="hidden lg:flex text-white" href="#login">
-              Connect Wallet
-            </Button> */}
             <WalletConnector/>
             <Button
               className="ml-auto lg:hidden "
@@ -96,23 +94,9 @@ const Header = () => {
             >
               <MenuSvg openNavigation={openNavigation} />
             </Button>
-
           </div>
         </div>
       </div>
-      
-      {/* Mobile Search Bar
-      <div className="lg:hidden fixed top-[5rem] left-0 w-full px-5 py-2 bg-n-8/90 backdrop-blur-sm z-40 border-b border-n-6 rounded-full">
-        <div className="relative w-full">
-          
-          <input
-            type="text"
-            placeholder="Search token or address..."
-            className="w-full bg-gray-900/60 text-gray-200 rounded-lg py-2 px-4 pl-10 border border-gray-700 focus:outline-none focus:border-purple-500"
-          />
-          <FiSearch className="absolute left-3 top-3 text-gray-400" />
-        </div>
-      </div> */}
     </>
   );
 };

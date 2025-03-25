@@ -1,10 +1,10 @@
 "use client";
-
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Script from "next/script";  // Import the next/script component
+import Script from "next/script";
 import Header from "./components/Header";
 import ButtonGradient from "./assets/svg/ButtonGradient";
+import {ParallaxBackground} from "../app/components/Parallax"; // Optional import
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,27 +16,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
-        {/* Use next/script with 'beforeInteractive' strategy */}
-        <link rel="icon" href="/logo.svg" />
+        <link rel="icon" href="/favicon.ico" />
         <title>Bitswap | Home</title>
         <Script
           src="/wallet-preload.js"
-          strategy="beforeInteractive"  // Loads before the page is interactive
+          strategy="beforeInteractive"
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
+        className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}
+      >
+        {/* Optional: Add ParallaxBackground here if you want it on all pages */}
+        <ParallaxBackground />
+        
         <Header/>
         {children}
+        <ButtonGradient/>
       </body>
-      <ButtonGradient/>
     </html>
   );
 }

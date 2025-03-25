@@ -69,6 +69,7 @@ const WalletConnector = () => {
         
             const userData = data.userSession.loadUserData();
             console.log('User Data:', userData);
+            console.log(userData.profile.stxAddress.mainnet)
         
             if (!userData.profile) {
               throw new Error('Invalid response: Missing profile.');
@@ -113,8 +114,6 @@ const WalletConnector = () => {
   const disconnectWallet = () => {
     try {
       setIsDisconnecting(true);
-      
-      // Simulate delay to show loading spinner
       setTimeout(() => {
         localStorage.removeItem('stacks-session');
         Object.keys(localStorage).forEach((key) => {
@@ -126,7 +125,7 @@ const WalletConnector = () => {
         setAddress(null);
         setIsDisconnecting(false);
         console.log('Wallet disconnected'); 
-      }, 1000); // 1 second delay
+      }, 1000);
       
     } catch (error) {
       console.error('Error during disconnect:', error);
@@ -152,7 +151,7 @@ const WalletConnector = () => {
           <Button className={buttonClasses} onClick={disconnectWallet}>
             <div className='flex items-center gap-2'>
               {/* {address} */}
-              Disconnect Wallet
+              Disconnect
               {isDisconnecting && <BiLoaderAlt className="animate-spin ml-2" />}
             </div>
           </Button>

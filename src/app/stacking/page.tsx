@@ -1,12 +1,12 @@
 import React from 'react'
-import Hero from '../components/Hero'
+import Liquidity from "../components/Liquidity"
 
-const Staking = () => {
+const Stacking = () => {
   return (
     <div className="pt-[4.75rem] lg:pt-[5.25rem] overflow-hidden">
-        <Hero />
-      </div>
+       <Liquidity/>
+    </div>
   )
 }
 
-export default Staking
+export default Stacking

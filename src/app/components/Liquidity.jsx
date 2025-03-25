@@ -1,95 +1,40 @@
 "use client"
 import { useState, useRef, useEffect } from "react";
-import {FaTools, FaExclamationCircle } from "react-icons/fa";
+import { FaFire, FaTools, FaExclamationCircle } from "react-icons/fa";
+import { ScrollParallax } from "react-just-parallax";
 import { RxReset } from "react-icons/rx";
 import { CgArrowsExchangeAltV, } from "react-icons/cg";
 import {  BiChevronDown } from "react-icons/bi";
 import Section from "./_components/Section.jsx";
 import { BottomLine } from "../components/design/Hero.jsx";
-import {currencyIcons,exchangeRates, currencies} from "../assets/index.js"
+import {currencyIcons,allTitles,allLogos,allNumbers,logos,numbers,titles,exchangeRates, currencies} from "../assets/index.js"
 import Button from "./_components/Button.jsx";
-import { AiOutlineStock, AiOutlineSwap } from "react-icons/ai";
-import Logo from "./_components/Logo.jsx"
+import { AiOutlineSwap } from "react-icons/ai";
+import { GoStack } from "react-icons/go";
+import Logo from "./_components/Logo.jsx";
 
-const Hero = () => {
+
+const Liquidity = () => {
+  const parallaxRef = useRef(null);
   const [selling, setSelling] = useState("BTC");
   const [buying, setBuying] = useState("STX");
   const [amount, setAmount] = useState("");
   const [receivedAmount, setReceivedAmount] = useState("");
   const [isSellingDropdownOpen, setIsSellingDropdownOpen] = useState(false);
   const [isBuyingDropdownOpen, setIsBuyingDropdownOpen] = useState(false);
-  const [btcPrice, setBtcPrice] = useState(null);
-  const [stxPrice, setStxPrice] = useState(null);
 
   const sellingDropdownRef = useRef(null);
   const buyingDropdownRef = useRef(null);
-
-  // WebSocket for real-time price fetching
+ 
   useEffect(() => {
-    const btcSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
-    const stxSocket = new WebSocket('wss://stream.binance.com:9443/ws/stxusdt@ticker');
-    const usdcSocket = new WebSocket('wss://stream.binance.com:9443/ws/usdcusdt@ticker');
-
-    btcSocket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setBtcPrice(parseFloat(data.c)); // 'c' is the current price from Binance WebSocket
-    };
-
-    stxSocket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setStxPrice(parseFloat(data.c)); // 'c' is the current price from Binance WebSocket
-    };
-
-    usdcSocket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setUsdcPrice(parseFloat(data.c)); // Fetch USDC price for more accurate USD conversion
-      usdcSocket.close();
-    };
-
-    // Clean up the WebSocket connections on component unmount
-    return () => {
-      btcSocket.close();
-      stxSocket.close();
-    };
-  }, []);
-
-   // Calculate USD value based on real-time prices
-   const calculateUSDValue = (amount, currency) => {
-    if (!amount) return 0;
-
-    switch(currency) {
-      case "BTC":
-        return parseFloat(amount) * btcPrice;
-      case "STX":
-        return parseFloat(amount) * stxPrice;
-      case "USDC":
-        return parseFloat(amount);
-      default:
-        // Fallback to predefined exchange rates
-        return parseFloat(amount) * (exchangeRates[currency]?.["USDC"] || 1);
-    }
-  };
-
-  // Update conversion when amount, selling/buying currencies, or prices change
-  useEffect(() => {
-    if (amount && !isNaN(amount) && btcPrice && stxPrice) {
-      let convertedAmount;
-      
-      // Determine conversion based on currencies and their real-time prices
-      if (selling === "BTC" && buying === "STX") {
-        convertedAmount = (parseFloat(amount) * btcPrice / stxPrice ).toFixed(4);
-      } else if (selling === "STX" && buying === "BTC") {
-        convertedAmount = (parseFloat(amount) * stxPrice / btcPrice ).toFixed(4);
-      } else {
-        const rate = exchangeRates[selling][buying];
-        convertedAmount = (parseFloat(amount) * rate ).toFixed(4);
-      }
-      
-      setReceivedAmount(convertedAmount);
+    if (amount && !isNaN(amount)) {
+      const rate = exchangeRates[selling][buying];
+      const received = (parseFloat(amount) * rate *1.05).toFixed(4);
+      setReceivedAmount(received);
     } else {
       setReceivedAmount("");
     }
-  }, [amount, selling, buying, btcPrice, stxPrice]);
+  }, [amount, selling, buying]);
 
   const handleReset = () => {
     setAmount(""); 
@@ -99,18 +44,22 @@ const Hero = () => {
   };
 
   const handleExchange = () => {
+    // Swap the selling and buying currencies
     const temp = selling;
     setSelling(buying);
     setBuying(temp);
     
+    // Recalculate the amounts in reverse
     if (amount && !isNaN(amount)) {
       setAmount(receivedAmount);
+      // The new received amount will be calculated in the useEffect
     } else {
       setAmount("");
       setReceivedAmount("");
     }
   };
 
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -130,45 +79,47 @@ const Hero = () => {
     };
   }, []);
 
-  if (!btcPrice || !stxPrice) {
-    return (
-      <Section className="relative h-screen flex items-center justify-center">
-        <div className="text-white">Loading real-time prices...</div>
-      </Section>
-    );
-  }
+  
 
   return (
     <Section
-      className="relative h-screen flex items-center justify-center overflow-hidden pt-12 -mt-[5.25rem] "
+      className="relative h-screen flex items-center justify-center overflow-hidden pt-12 -mt-[5.25rem]"
       crosses
       crossesOffset="lg:translate-y-[5.25rem]"
       customPaddings
       id="hero"
     >
-      
       {/* Swap UI - Centered */}
       <div className="w-[450px] bg-gray-800 p-8 rounded-lg shadow-lg text-white relative z-10 mt-10 ">
-        <Logo/>
+       <Logo/>
+
+        {/* Exchange Rate Display
+        <div className="text-center text-xs text-gray-400 mb-2">
+          {amount ? (
+            <span>1 {selling} = {exchangeRates[selling][buying]} {buying}</span>
+          ) : (
+            <span>Enter an amount to see the exchange rate</span>
+          )}
+        </div> */}
 
         {/* Tabs */}
         <div className="flex justify-center items-center mb-4 mx-2 mt-4">
           <span className="text-green-400 font-sans font-semibold flex flex-row items-center justify-center gap-2 hover:cursor-pointer">
-          <AiOutlineStock size={22} /> Trading
+          <GoStack size={22} /> Stacking
           </span>
         </div>
 
         {/* Swap Box with Dropdowns */}
         <div className="bg-gray-700 p-4 rounded-lg relative">
           <div className="flex justify-between items-center relative text-xs font-sans">
-            <span>From:</span>
+            <span className="">Deposit :</span>
           </div>
           <div className="flex flex-row items-center justify-center py-2">
             <div className="relative" ref={sellingDropdownRef}>
               <button
                 onClick={() => {
                   setIsSellingDropdownOpen(!isSellingDropdownOpen);
-                  setIsBuyingDropdownOpen(false); 
+                  setIsBuyingDropdownOpen(false); // Close the other dropdown
                 }}
                 className=" text-white w-32 px-4 py-2 rounded-md bg-green-500/70 transition-all duration-100 flex items-center gap-2"
               >
@@ -210,16 +161,21 @@ const Hero = () => {
                   paddingRight: "1rem",      
                 }}
               />
+
           </div>
           <span className="flex items-center justify-end text-xs text-gray-400">
           {amount ? (
-              <span>
-                ${calculateUSDValue(amount, selling).toFixed(4)} USD
-              </span>
-            ) : (
-              <span></span>
-            )}
-          </span>
+    <span>
+      ${(
+        parseFloat(amount) *
+        exchangeRates[selling]["USDC"]
+      ).toFixed(4)} USD
+    </span>
+  ) : (
+    <span></span>
+  )}
+            </span>
+
 
           {/* Exchange Icon with Reset Button */}
           <div className="flex justify-center items-center relative z-20 mt-8">
@@ -237,7 +193,7 @@ const Hero = () => {
           </div>
 
           <div className="flex justify-between items-center relative mt-8 text-xs font-sans">
-            <span>To:</span>
+            <span>Withdraw :</span>
           </div>
           <div className="flex flex-row items-center justify-center py-2">
             <div className="relative" ref={buyingDropdownRef}>
@@ -282,23 +238,26 @@ const Hero = () => {
             />
           </div>
           <div className="flex justify-between items-center">
-            {/* Left side: Additional charge message */}
-            <span className="flex items-center text-xs mt-2 gap-1 text-gray-400">
-              <FaExclamationCircle /> Additional 5% charge is incurred.
-            </span>
+  {/* Left side: Additional charge message */}
+  <span className="flex items-center text-xs mt-2 gap-1 text-gray-400">
+    <FaExclamationCircle /> Additional 5% charge is incurred.
+  </span>
 
-            {/* Right side: Converted amount */}
-            {receivedAmount ? (
-              <div className="flex items-center justify-end text-xs text-gray-400">
-                <span>
-                  ${calculateUSDValue(receivedAmount, buying).toFixed(4)} USD
-                </span>
-              </div>
-            ) : (
-              <span></span>
-            )}
-          </div>
-        </div>
+  {/* Right side: Converted amount */}
+  {receivedAmount ? (
+    <div className="flex items-center justify-end text-xs text-gray-400">
+      <span>
+        ${(
+          parseFloat(receivedAmount) *
+          exchangeRates[buying]["USDC"]
+        ).toFixed(4)} USD
+      </span>
+    </div>
+  ) : (
+    <span></span>
+  )}
+</div>
+      </div>
 
         {/* Slippage & Routing */}
         <div className="flex justify-between items-center text-sm text-gray-400 my-3">
@@ -325,9 +284,10 @@ const Hero = () => {
         {/* Connect Wallet Button */}
         <Button className="w-full cursor-pointer flex items-center gap-2">
           <div className="flex items-center gap-2 font-sans ">
-          Swap <AiOutlineSwap size={20} />
+          Deposit <AiOutlineSwap size={20} />
           </div>
         </Button>
+
       </div>
 
       <BottomLine />
@@ -364,4 +324,4 @@ const Hero = () => {
   );
 };
 
-export default Hero;
+export default Liquidity;
