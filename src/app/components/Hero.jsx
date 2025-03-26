@@ -112,6 +112,26 @@ const Hero = () => {
     );
   }
 
+  const togglePoolActivation = async () => {
+    try {
+      const { request } = await import('@stacks/connect');
+
+    const response = await request('stx_callContract', {
+      contract:  'ST1VZ3YGJKKC8JSSWMS4EZDXXJM7QWRBEZ0ZWM64E.bit-swap',
+      // contractAddress: 'ST1VZ3YGJKKC8JSSWMS4EZDXXJM7QWRBEZ0ZWM64E',
+      // contractName: 'bit-swap',
+      functionName: 'toggle-pool-active',
+      functionArgs: [], // array of Clarity values
+      network: 'testnet'
+    });
+    
+    console.log('Transaction ID:', response.txid)
+    } catch (error) {
+      console.error('Wallet returned an error:', error);
+    }
+    
+  }
+
   return (
     <Section
       className="relative h-screen flex items-center justify-center overflow-hidden pt-12 -mt-[5.25rem] "
@@ -300,7 +320,7 @@ const Hero = () => {
         </div>
 
         {/* Connect Wallet Button */}
-        <Button className="w-full cursor-pointer flex items-center gap-2">
+        <Button className="w-full cursor-pointer flex items-center gap-2" onClick={togglePoolActivation}>
           <div className="flex items-center gap-2 font-sans ">
           Swap <AiOutlineSwap size={20} />
           </div>
