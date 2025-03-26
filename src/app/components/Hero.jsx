@@ -4,55 +4,29 @@ import {FaTools, FaExclamationCircle } from "react-icons/fa";
 import { RxReset } from "react-icons/rx";
 import { CgArrowsExchangeAltV, } from "react-icons/cg";
 import {  BiChevronDown } from "react-icons/bi";
-import Section from "./_components/Section.jsx";
-import { BottomLine } from "../components/design/Hero.jsx";
-import {currencyIcons,exchangeRates, currencies} from "../assets/index.js"
-import Button from "./_components/Button.jsx";
 import { AiOutlineStock, AiOutlineSwap } from "react-icons/ai";
+import Section from "./_components/Section.jsx";
+
+import {currencyIcons,exchangeRates, currencies} from "../assets/index.js"
+import { BottomLine } from "../components/design/Hero.jsx";
+import Button from "./_components/Button.jsx";
 import Logo from "./_components/Logo.jsx"
 
+import useCryptoPrices from "./useCryptoPrices.js";
+
 const Hero = () => {
+
   const [selling, setSelling] = useState("BTC");
   const [buying, setBuying] = useState("STX");
   const [amount, setAmount] = useState("");
   const [receivedAmount, setReceivedAmount] = useState("");
   const [isSellingDropdownOpen, setIsSellingDropdownOpen] = useState(false);
   const [isBuyingDropdownOpen, setIsBuyingDropdownOpen] = useState(false);
-  const [btcPrice, setBtcPrice] = useState(null);
-  const [stxPrice, setStxPrice] = useState(null);
-  const [usdcPrice, setUsdcPrice] = useState(1);
 
   const sellingDropdownRef = useRef(null);
   const buyingDropdownRef = useRef(null);
 
-  // WebSocket for real-time price fetching
-  useEffect(() => {
-    const btcSocket = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
-    const stxSocket = new WebSocket('wss://stream.binance.com:9443/ws/stxusdt@ticker');
-    const usdcSocket = new WebSocket('wss://stream.binance.com:9443/ws/usdcusdt@ticker');
-
-    btcSocket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setBtcPrice(parseFloat(data.c));
-    };
-
-    stxSocket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setStxPrice(parseFloat(data.c)); 
-    };
-
-    usdcSocket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setUsdcPrice(parseFloat(data.c)); 
-      usdcSocket.close();
-    };
-
-    return () => {
-      btcSocket.close();
-      stxSocket.close();
-      usdcSocket.close();
-    };
-  }, []);
+  const { btcPrice, stxPrice, usdcPrice } = useCryptoPrices();
 
    const calculateUSDValue = (amount, currency) => {
     if (!amount) return 0;
@@ -290,12 +264,15 @@ const Hero = () => {
             {/* Right side: Converted amount */}
             {receivedAmount ? (
               <div className="flex items-center justify-end text-xs text-gray-400">
-                <span>
-                  ${calculateUSDValue(receivedAmount, buying).toFixed(4)} USD
-                </span>
-              </div>
-            ) : (
-              <span></span>
+                 <span>
+        ${(
+          parseFloat(receivedAmount) *
+          exchangeRates[buying]["USDC"]
+        ).toFixed(4)} USD
+      </span>
+    </div>
+  ) : (
+    <span></span>
             )}
           </div>
         </div>
