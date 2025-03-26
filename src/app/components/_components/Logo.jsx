@@ -4,6 +4,7 @@ import { FaFire } from 'react-icons/fa'
 
 const Logo = () => {
   return (
+    
     <div className="flex justify-between items-center mb-3">
           <div className="relative flex items-center bg-red-600 px-3 py-1 rounded-full text-white text-xs font-semibold">
             <FaFire className="mr-1" /> Top

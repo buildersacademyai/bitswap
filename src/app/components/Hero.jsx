@@ -13,6 +13,8 @@ import Button from "./_components/Button.jsx";
 import Logo from "./_components/Logo.jsx"
 
 import useCryptoPrices from "./useCryptoPrices.js";
+import Loader from "./_components/Loader.jsx";
+import Loader1 from "./_components/Loader1.jsx";
 
 const Hero = () => {
 
@@ -104,13 +106,22 @@ const Hero = () => {
     };
   }, []);
 
-  if (!btcPrice || !stxPrice) {
-    return (
-      <Section className="relative h-screen flex items-center justify-center">
-        <div className="text-white">Loading real-time prices...</div>
-      </Section>
-    );
-  }
+
+  const handleSellingChange = (currency) => {
+    setSelling(currency);
+    setIsSellingDropdownOpen(false); // Close dropdown
+  
+    if (currency === "BTC" || currency === "SBTC") {
+      setBuying("STX"); // Auto-set buying to STX when BTC/SBTC is selected
+    } else if (currency === "STX") {
+      setBuying("BTC"); // Auto-set buying to BTC when STX is selected
+    }
+  };
+  
+  const handleBuyingChange = (currency) => {
+    setBuying(currency);
+    setIsBuyingDropdownOpen(false); // Close dropdown
+  };
 
   const togglePoolActivation = async () => {
     try {
@@ -143,10 +154,17 @@ const Hero = () => {
       
       {/* Swap UI - Centered */}
       <div className="w-[450px] bg-gray-800 p-8 rounded-lg shadow-lg text-white relative z-10 mt-10 ">
+      {!btcPrice || !stxPrice ? (
+    <>
+      <Loader1/>
+    </>
+  ) : (
         <Logo/>
+  )}
 
 
         <div className="flex justify-center items-center mb-4 mx-2 mt-4">
+          
           <span className="text-green-400 font-sans font-semibold flex flex-row items-center justify-center gap-2 hover:cursor-pointer">
           <AiOutlineStock size={22} /> Trading
           </span>
@@ -154,147 +172,161 @@ const Hero = () => {
 
         {/* Swap Box with Dropdowns */}
         <div className="bg-gray-700 p-4 rounded-lg relative">
-          <div className="flex justify-between items-center relative text-xs font-sans">
-            <span>From:</span>
-          </div>
-          <div className="flex flex-row items-center justify-center py-2">
-            <div className="relative" ref={sellingDropdownRef}>
-              <button
-                onClick={() => {
-                  setIsSellingDropdownOpen(!isSellingDropdownOpen);
-                  setIsBuyingDropdownOpen(false); 
-                }}
-                className=" text-white w-32 px-4 py-2 rounded-md bg-green-500/70 transition-all duration-100 flex items-center gap-2"
-              >
-                {currencyIcons[selling]}
-                {selling}
-                <BiChevronDown size={20} />
-              </button>
-              {isSellingDropdownOpen && (
-                <div className="absolute bg-gray-900 border border-gray-600 rounded-md mt-1 w-32 z-30">
-                  {currencies.map((currency) => (
-                    <div
-                      key={currency}
-                      onClick={() => {
-                        setSelling(currency);
-                        setIsSellingDropdownOpen(false);
-                      }}
-                      className={`px-4 py-2 hover:bg-green-500/70 cursor-pointer flex items-center gap-2 border-b-2 border-gray-800 ${
-                        selling === currency ? "bg-green-500/70" : ""
-                      }`}
-                    >
-                      {currencyIcons[currency]}
-                      {currency}
-                    </div>
-                  ))}
+        {!btcPrice || !stxPrice ? (
+    <>
+      <Loader/>
+    </>
+  ) : (
+    <>
+      {/* Swap UI (Only shown after loading) */}
+      <div className="flex justify-between items-center relative text-xs font-sans">
+        <span>From:</span>
+      </div>
+      <div className="flex flex-row items-center justify-center py-2">
+        <div className="relative" ref={sellingDropdownRef}>
+          <button
+            onClick={() => {
+              setIsSellingDropdownOpen(!isSellingDropdownOpen);
+              setIsBuyingDropdownOpen(false);
+            }}
+            className="text-white w-32 px-4 py-2 rounded-md bg-green-500/70 transition-all duration-100 flex items-center gap-2"
+          >
+            {currencyIcons[selling]}
+            {selling}
+            <BiChevronDown size={20} />
+          </button>
+          {isSellingDropdownOpen && (
+            <div className="absolute bg-gray-900 border border-gray-600 rounded-md mt-1 w-32 z-30">
+              {["BTC", "SBTC", "STX"].map((currency) => (
+                <div
+                  key={currency}
+                  onClick={() => handleSellingChange(currency)}
+                  className={`px-4 py-2 hover:bg-green-500/70 cursor-pointer flex items-center gap-2 border-b border-gray-800 rounded-md ${
+                    selling === currency ? "bg-green-500/70" : ""
+                  }`}
+                >
+                  {currencyIcons[currency]}
+                  <span>{currency}</span>
                 </div>
-              )}
+              ))}
             </div>
-            <input
-               type="number"
-               placeholder="0.00"
-               className="w-full bg-transparent text-white text-2xl p-2 outline-none text-right"
-               value={amount}
-               onChange={(e) => setAmount(e.target.value)}
-               style={{
-                  WebkitAppearance: "none",
-                  MozAppearance: "textfield", 
-                appearance: "none",     
-                  margin: 0,
-                  paddingRight: "1rem",      
-                }}
-              />
-          </div>
-          <span className="flex items-center justify-end text-xs text-gray-400">
-          {amount ? (
-              <span>
-                ${calculateUSDValue(amount, selling).toFixed(4)} USD
-              </span>
-            ) : (
-              <span></span>
-            )}
-          </span>
-
+          )}
+        </div>
+        <input
+          type="number"
+          placeholder="0.00"
+          className="w-full bg-transparent text-white text-2xl p-2 outline-none text-right"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          style={{
+            WebkitAppearance: "none",
+            MozAppearance: "textfield",
+            appearance: "none",
+            margin: 0,
+            paddingRight: "1rem",
+          }}
+        />
+      </div>
+      <span className="flex items-center justify-end text-xs text-gray-400">
+        {amount ? <span>${calculateUSDValue(amount, selling).toFixed(4)} USD</span> : <span></span>}
+      </span>
+    </>
+  )}
           {/* Exchange Icon with Reset Button */}
           <div className="flex justify-center items-center relative z-20 mt-8">
-            <hr className="border-2 w-full rounded-full" />
-            <div 
-              className="bg-gray-800 rounded-full p-3 absolute -my-6 text-purple-400/90 hover:border-purple-600 hover:bg-purple-600 border-gray-900 border-2 cursor-pointer transition-all duration-150 "
-              onClick={handleExchange}
-            >
-              <div className="relative flex items-center">
-                <button className="transition-all duration-75 text-white cursor-pointer">
-                  <CgArrowsExchangeAltV className="text-xl" size={20} />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center relative mt-8 text-xs font-sans">
-            <span>To:</span>
-          </div>
-          <div className="flex flex-row items-center justify-center py-2">
-            <div className="relative" ref={buyingDropdownRef}>
-              <button
-                onClick={() => {
-                  setIsBuyingDropdownOpen(!isBuyingDropdownOpen);
-                  setIsSellingDropdownOpen(false); // Close the other dropdown
-                }}
-                className="text-white w-32 px-4 py-2 rounded-md bg-purple-600 hover:border-purple-600 transition-all duration-100 flex items-center gap-2"
-              >
-                {currencyIcons[buying]}
-                {buying}
-                <BiChevronDown size={20} />
-              </button>
-              {isBuyingDropdownOpen && (
-                <div className="absolute bg-gray-900 border border-gray-600 rounded-md mt-1 w-32 z-10">
-                  {currencies.map((currency) => (
-                    <div
-                      key={currency}
-                      onClick={() => {
-                        setBuying(currency);
-                        setIsBuyingDropdownOpen(false);
-                      }}
-                      className={`px-4 py-2 hover:bg-purple-600 cursor-pointer flex items-center gap-2 border-b-2 border-gray-800 ${
-                        buying === currency ? "bg-purple-600" : ""
-                      }`}
-                    >
-                      {currencyIcons[currency]}
-                      {currency}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <input
-              type="text"
-              placeholder="0.00"
-              className="w-full bg-transparent text-white text-2xl p-2 outline-none text-right"
-              value={receivedAmount}
-              readOnly
-              style={{ WebkitAppearance: "none", margin: 0 }}
-            />
-          </div>
-          <div className="flex justify-between items-center">
-            {/* Left side: Additional charge message */}
-            <span className="flex items-center text-xs mt-2 gap-1 text-gray-400">
-              <FaExclamationCircle /> Additional 5% charge is incurred.
-            </span>
-
-            {/* Right side: Converted amount */}
-            {receivedAmount ? (
-              <div className="flex items-center justify-end text-xs text-gray-400">
-                 <span>
-        ${(
-          parseFloat(receivedAmount) *
-          exchangeRates[buying]["USDC"]
-        ).toFixed(4)} USD
-      </span>
+  <hr className="border-2 w-full rounded-full" />
+  <div
+    className={`bg-gray-800 rounded-full p-3 absolute -my-6 text-purple-400/90 hover:border-purple-600 hover:bg-purple-600 border-gray-900 border-2 cursor-pointer transition-all duration-150 ${(!btcPrice || !stxPrice) ? 'pointer-events-none opacity-100' : ''}`}
+    onClick={handleExchange}
+  >
+    <div className="relative flex items-center">
+      <button
+        className={`transition-all duration-75 text-white cursor-pointer ${(!btcPrice || !stxPrice) ? 'cursor-not-allowed' : ''}`}
+        disabled={!btcPrice || !stxPrice}
+      >
+        <CgArrowsExchangeAltV className="text-xl" size={20} />
+      </button>
     </div>
-  ) : (
-    <span></span>
-            )}
+  </div>
+</div>
+
+         
+          {(!btcPrice || !stxPrice) ? (
+            <div className="p-4">
+
+              <Loader />
+            </div>
+) : (
+  <>
+    {/* Swap UI (Only shown after loading) */}
+    <div className="flex justify-between items-center relative mt-8 text-xs font-sans">
+      <span>To:</span>
+    </div>
+
+    <div className="flex flex-row items-center justify-center py-2">
+      <div className="relative" ref={buyingDropdownRef}>
+        <button
+          onClick={() => {
+            setIsBuyingDropdownOpen(!isBuyingDropdownOpen);
+            setIsSellingDropdownOpen(false);
+          }}
+          className="text-white w-32 px-4 py-2 rounded-md bg-purple-600 hover:border-purple-600 transition-all duration-100 flex items-center gap-2"
+        >
+          {currencyIcons[buying]}
+          {buying}
+          <BiChevronDown size={20} />
+        </button>
+
+        {isBuyingDropdownOpen && (
+          <div className="absolute bg-gray-900 border w-32 border-gray-600 rounded-md mt-1 z-30">
+            {(selling === "BTC" || selling === "SBTC" ? ["STX"] : ["BTC", "SBTC"]).map((currency) => (
+              <div
+                key={currency}
+                onClick={() => handleBuyingChange(currency)}
+                className={`px-4 py-2 hover:bg-purple-600 cursor-pointer flex items-center gap-2 border-b border-gray-800 rounded-md ${
+                  buying === currency ? "bg-purple-600" : ""
+                }`}
+              >
+                {currencyIcons[currency]}
+                <span>{currency}</span>
+              </div>
+            ))}
           </div>
+        )}
+      </div>
+
+      <input
+        type="text"
+        placeholder="0.00"
+        className="w-full bg-transparent text-white text-2xl p-2 outline-none text-right"
+        value={receivedAmount}
+        readOnly
+        style={{ WebkitAppearance: "none", margin: 0 }}
+      />
+    </div>
+
+    <div className="flex justify-between items-center">
+      {/* Left side: Additional charge message */}
+      <span className="flex items-center text-xs mt-2 gap-1 text-gray-400">
+        <FaExclamationCircle /> Additional 5% charge is incurred.
+      </span>
+
+      {/* Right side: Converted amount */}
+      {receivedAmount ? (
+        <div className="flex items-center justify-end text-xs text-gray-400">
+          <span>
+            ${(
+              parseFloat(receivedAmount) *
+              exchangeRates[buying]["USDC"]
+            ).toFixed(4)} USD
+          </span>
+        </div>
+      ) : (
+        <span></span>
+      )}
+    </div>
+  </>
+)}
         </div>
 
         {/* Slippage & Routing */}
@@ -312,15 +344,16 @@ const Hero = () => {
             </span>
           </div>
           <button
-            onClick={handleReset}
-            className="bg-gray-600 hover:bg-gray-500 text-white p-2 rounded-full cursor-pointer justify-end"
-          >
-            <RxReset />
-          </button>
+  onClick={handleReset}
+  className={`bg-gray-600 hover:bg-gray-500 text-white p-2 rounded-full cursor-pointer justify-end ${(!btcPrice || !stxPrice) ? 'cursor-not-allowed opacity-50' : ''}`}
+  disabled={!btcPrice || !stxPrice}
+>
+  <RxReset />
+</button>
         </div>
 
         {/* Connect Wallet Button */}
-        <Button className="w-full cursor-pointer flex items-center gap-2" onClick={togglePoolActivation}>
+        <Button className={`w-full cursor-pointer flex items-center gap-2" ${(!btcPrice || !stxPrice) ? "opacity-50 cursor-not-allowed transition-none" : ""}`} onClick={togglePoolActivation}>
           <div className="flex items-center gap-2 font-sans ">
           Swap <AiOutlineSwap size={20} />
           </div>
